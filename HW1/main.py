@@ -68,7 +68,7 @@ def shrink_image(img):
 # (f)
 def binarize_image(img):
     trunc_value = 128
-    ret, binarized_img = cv2.threshold(img, trunc_value, 255, cv2.THRESH_TRUNC)
+    ret, binarized_img = cv2.threshold(img, trunc_value, 255, cv2.THRESH_BINARY)
     
     cv2.imwrite('part2-f.bmp', binarized_img)
 
@@ -83,4 +83,5 @@ def main():
     binarize_image(np.copy(img))
 
 
-main()
+if __name__ == '__main__':
+    main()
