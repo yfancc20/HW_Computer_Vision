@@ -8,26 +8,26 @@ import numpy as np
 
 # (a)
 def up_down_image(img):
-    row, col = img.shape[:2]
-    row_end = row - 1
+    height, width = img.shape[:2]
+    height_end = height - 1
 
     # swap(1st, nth), swap(2nd, n-1th)...
-    for x in range(row//2):
-        img[[x]], img[[row_end]] = img[[row_end]], img[[x]]
-        row_end -= 1
+    for h in range(height//2):
+        img[[h]], img[[height_end]] = img[[height_end]], img[[h]]
+        height_end -= 1
 
     cv2.imwrite('part1-a.bmp', img)
 
 
 # (b)
 def right_left_image(img):
-    row, col = img.shape[:2]
+    height, width = img.shape[:2]
     
-    for r in range(row):
-        col_end = col - 1
-        for c in range(col//2):
-            img[r, [c, col_end]] = img[r, [col_end, c]]
-            col_end -= 1
+    for h in range(height):
+        width_end = width - 1
+        for w in range(width//2):
+            img[h, [w, width_end]] = img[h, [width_end, w]]
+            width_end -= 1
     
     cv2.imwrite('part1-b.bmp', img)
 
@@ -35,13 +35,13 @@ def right_left_image(img):
 # (c)
 def diagonally_mirrored_image(img):
     # assume the image is square, from top-left to bottom-right
-    row, col = img.shape[:2]
-    row_end = 0
+    height, width = img.shape[:2]
+    height_end = 0
     
-    for r in range(row):
-        for c in range(row_end):
-            img[r, c] = img[c, r]
-        row_end += 1
+    for h in range(height):
+        for w in range(height_end):
+            img[h, w] = img[w, h]
+        height_end += 1
 
     cv2.imwrite('part1-c.bmp', img)
 
