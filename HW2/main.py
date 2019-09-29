@@ -49,15 +49,20 @@ def connected_components(img):
     for h in range(height):
         for w in range(weight):
             if img[h, w][0] != 0:
-                labels[h, w] = 1
-    
-    # top-down
+                labels[h, w] = new_label
+                new_label += 1
+
+    # # top-down
     for h in range(height):
         for w in range(weight):
-            
+            if labels[h, w] > 0:
+                labels[h, w] = min_label(labels, h, w)
 
-    
-    
+
+def min_label(labels, h, w):
+    # 4-connected
+    # 
+    int x_way = []
 
 
 def main():
