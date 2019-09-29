@@ -4,10 +4,12 @@ Yi-Fan Wu (R08921104)
 
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 # (a)
 def binarize_image(img):
+    print('(a) Binarizing...')
     height, width = img.shape[:2]
     for h in range(height):
         for w in range(width):
@@ -19,9 +21,26 @@ def binarize_image(img):
     cv2.imwrite('a.bmp', img)
 
 
+# (b)
+def histogram_image(img):
+    print('(b) Doing histogram...')
+    height, width = img.shape[:2]
+    bins  = np.zeros((256))
+
+    for h in range(height):
+        for w in range(width):
+            bins[img[h, w][0]] += 1
+    
+    # draw the bar chart of the data (histogram)
+      
+    plt.bar(np.arange(256), bins)
+    plt.show()
+
 def main():
+    print('Reading the image...')
     img = cv2.imread('lena.bmp')
     binarize_image(np.copy(img))
+    histogram_image(np.copy(img))
 
 if __name__ == '__main__':
     main()
