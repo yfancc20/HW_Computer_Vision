@@ -42,6 +42,21 @@ def histogram_image(img):
 def connected_components(img):
     print('(c) Finding connected components...')
     height, weight = img.shape[:2]
+
+    # initialization
+    labels = np.zeros((height, weight), dtype=np.int)
+    new_label = 1
+    for h in range(height):
+        for w in range(weight):
+            if img[h, w][0] != 0:
+                labels[h, w] = 1
+    
+    # top-down
+    for h in range(height):
+        for w in range(weight):
+            
+
+    
     
 
 
