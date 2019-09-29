@@ -1,3 +1,4 @@
-HW1/*.bmp
-HW1/*.pdf
+HW*/*.bmp
+HW*/*.pdf
 *.zip
+!HW*/lena.bmp
