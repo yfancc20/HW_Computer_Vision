@@ -34,7 +34,8 @@ def histogram_image(img):
     
     # draw the bar chart of the data (histogram) 
     plt.bar(np.arange(256), bins)
-    plt.show()
+    plt.savefig('b.png')
+    # plt.show()
 
 
 # (c)
@@ -162,7 +163,7 @@ def connected_components(img):
     
     cv2.imwrite('c.bmp', img)
 
-                
+         
 def get_neighbors(labels, h, w):
     return {
         'up': labels[h-1, w] if h - 1 >= 0 else 0,
@@ -170,22 +171,6 @@ def get_neighbors(labels, h, w):
         'down': labels[h+1, w] if h + 1 < 512 else 0,
         'right': labels[h, w+1] if w + 1 < 512 else 0,
     }
-
-def min_neighbor(labels, h, w):
-    # 4-connected
-    # up, right, down, left
-    x = [-1, 0, 1, 0]
-    y = [0, 1, 0, -1]
-    min_label = labels[h, w]
-    for i in range(4):
-        if h + x[i] >= 0 and w + y[i] >= 0 \
-           and labels[h+x[i], w+y[i]] != 0 \
-           and labels[h+x[i], w+y[i]] < labels[h, w]:
-           min_label = labels[h+x[i], w+y[i]]
-    return min_label
-
-
-
 
 
 def main():
