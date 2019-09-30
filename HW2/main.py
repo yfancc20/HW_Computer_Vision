@@ -160,7 +160,7 @@ def connected_components(img):
         # draw the rectangle
         cv2.rectangle(img, (d['leftmost'], d['top']), (d['rightmost'], d['bottom']), (255, 0, 0), 2)
         # find the middle point of each rectangle and extend it to a cross
-        middle = (rectangles[label]['cent_x'], rectangles[label]['cent_y'])
+        middle = (d['cent_x'], d['cent_y'])
         # draw the red cross
         for x in range(cross_radius):
             img[middle[0], middle[1] + x] = (0, 0, 255)
