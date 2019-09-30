@@ -32,8 +32,7 @@ def histogram_image(img):
         for w in range(width):
             bins[img[h, w][0]] += 1
     
-    # draw the bar chart of the data (histogram)
-      
+    # draw the bar chart of the data (histogram) 
     plt.bar(np.arange(256), bins)
     plt.show()
 
@@ -43,49 +42,57 @@ def connected_components(img):
     print('(c) Finding connected components...')
     height, width = img.shape[:2]
 
-    # initialization
+    """ initialization """
     labels = np.zeros((height, width), dtype=np.int)
-    labels_count = {}
-    i = 0 # increasing number from label
-    # top-down
+    labels_count = {}   # count the pixels of each label
+    i = 0               # for new a label
+    eq_class = []       # for equivalence class when detecting different labels
+
+    """ top-down """
     for h in range(height):
-        eq_class = []
+        eq_class = [] # clean the array
         for w in range(width):
-            if img[h, w][0] != 0: # catch the white pixel
+            # catch only white pixels
+            if img[h, w][0] != 0: 
+                # get neighbors of the current pixel 
                 neighbors = get_neighbors(labels, h, w)
-                if not neighbors['up'] and not neighbors['left']: # top-left
+
+                # 4-connected, check the pixels up and left
+                # When both up and left is empty, new a label then back to loop
+                if not neighbors['up'] and not neighbors['left']:
                     i += 1
                     labels[h, w] = i
-                    color = list(np.random.choice(range(256), size=3))
-                    img[h, w] = color
                     labels_count.update({labels[h, w] : 1})
-                elif not neighbors['up']: # at least one neighbor exists
+                    continue
+
+                # When at least neighbor exists, compare then propagate.
+                if not neighbors['up']: 
                     labels[h, w] = neighbors['left']
-                    img[h, w] = img[h, w-1]
                 elif not neighbors['left']: 
                     labels[h, w] = neighbors['up']
-                    img[h, w] = img[h-1, w]
                 elif neighbors['up'] < neighbors['left']:
                     labels[h, w] = neighbors['up']
-                    eq_class.append((neighbors['left'], neighbors['up'], img[h-1, w]))
-                    img[h, w] = img[h-1, w]
-                    # img[h, w] = list(np.random.choice(range(256), size=3))
+                    eq_class.append({
+                        'old': neighbors['left'], 
+                        'new': neighbors['up']
+                    })
                 else:
                     labels[h, w] = neighbors['left']
-                    img[h, w] = img[h, w-1]
-                labels_count[labels[h, w]] += 1
-        
-        if eq_class:
-            for eq in eq_class:
-                for w in range(width):
-                    if labels[h, w] == eq[0]:
-                        labels_count[labels[h, w]] -= 1
-                        labels[h, w] = eq[1]
-                        labels_count[eq[1]] += 1
-                        img[h, w] = eq[2]
 
-    change = True
-    j = 0
+                labels_count[labels[h, w]] += 1
+            # -- end of the loop of one row --
+
+        # Deal with the in-line equivalence class 
+        for eq in eq_class:
+            for w in range(width):
+                if labels[h, w] == eq['old']:
+                    labels_count[eq['old']] -= 1
+                    labels_count[eq['new']] += 1
+                    labels[h, w] = eq['new']
+
+    """ Bottom-up """
+    change = True   # detect if a pixel change or not
+    j = 0           # seed of choosing the direction when scanning rows
     while change:
         change = False
         j += 1
@@ -94,59 +101,66 @@ def connected_components(img):
                 if labels[h, w]:
                     neighbors = get_neighbors(labels, h, w)
                     original_label = new_label = labels[h, w]
-                    direction = None
+
+                    # Find min and propagate it 
                     for d in neighbors:
                         if neighbors[d] and labels[h, w] > neighbors[d]:
                             labels[h, w] = neighbors[d]
                             new_label = neighbors[d]
-                            direction = d
                             change = True
-                    
-                    if direction == 'right':
-                        img[h, w] = img[h, w+1]
-                    elif direction == 'down':
-                        img[h, w] = img[h+1, w]
-                    elif direction == 'left':
-                        img[h, w] = img[h, w-1]
 
                     labels_count[original_label] -= 1
                     labels_count[new_label] += 1
 
-    top_labels = []
-    for key in labels_count:
-        if labels_count[key] >= 500 :
-            top_labels.append(key)
+    """ Draw the rectangle and cross """
+    print("(c) Drawing the rectangles and crosses...")
+    # Find the labels contain more than 500 pixels
+    pass_labels = []
+    for label in labels_count:
+        if labels_count[label] >= 500 :
+            pass_labels.append(label)
 
+    # init of the rectangles' information
     rectangles = {}
-    for key in top_labels:
-        # []: top, left, down, right
-        rectangles.update({key: [512, 512, -1, -1]})
+    for label in pass_labels:
+        rectangles.update({
+            label: {
+                'top': 512,
+                'leftmost': 512,
+                'bottom': -1,
+                'rightmost': -1
+            }
+        })
 
-    for key in top_labels:
+    # Get the rectangle's info for each labels
+    for label in pass_labels:
         for h in range(height):
             for w in range(width):
-                if labels[h, w] == key:
-                    if h < rectangles[key][0]:
-                        rectangles[key][0] = h
-                    if w < rectangles[key][1]:
-                        rectangles[key][1] = w
-                    if h > rectangles[key][2]:
-                        rectangles[key][2] = h
-                    if w > rectangles[key][3]:
-                        rectangles[key][3] = w
+                if labels[h, w] == label:
+                    if h < rectangles[label]['top']:
+                        rectangles[label]['top'] = h
+                    if w < rectangles[label]['leftmost']:
+                        rectangles[label]['leftmost'] = w 
+                    if h > rectangles[label]['bottom']:
+                        rectangles[label]['bottom'] = h 
+                    if w > rectangles[label]['rightmost']:
+                        rectangles[label]['rightmost'] = w 
     
-    print(rectangles)
-    for key, value in rectangles.items():
-        cv2.rectangle(img, (value[1], value[0]), (value[3], value[2]), (255, 0, 0), 2)
-        middle = ((int)((value[2] + value[0]) / 2), (int)((value[3] + value[1]) / 2))
-        # print(middle)
-        for x in range(5):
+    # Draw function
+    cross_radius = 8
+    for label, d in rectangles.items():
+        # draw the rectangle
+        cv2.rectangle(img, (d['leftmost'], d['top']), (d['rightmost'], d['bottom']), (255, 0, 0), 2)
+        # find the middle point of each rectangle and extend it to a cross
+        middle = ((int)((d['top'] + d['bottom']) / 2), (int)((d['leftmost'] + d['rightmost']) / 2))
+        # draw the red cross
+        for x in range(cross_radius):
             img[middle[0], middle[1] + x] = (0, 0, 255)
             img[middle[0], middle[1] - x] = (0, 0, 255)
             img[middle[0] + x, middle[1]] = (0, 0, 255)
             img[middle[0] - x, middle[1]] = (0, 0, 255)
     
-    cv2.imwrite('ddd.bmp', img)
+    cv2.imwrite('c.bmp', img)
 
                 
 def get_neighbors(labels, h, w):
@@ -176,9 +190,9 @@ def min_neighbor(labels, h, w):
 
 def main():
     print('Reading the image...')
-    # img = cv2.imread('lena.bmp')
-    # binary_img = binarize_image(np.copy(img))
-    # histogram_image(np.copy(img))
+    img = cv2.imread('lena.bmp')
+    binary_img = binarize_image(np.copy(img))
+    histogram_image(np.copy(img))
     img = cv2.imread('a.bmp')
     connected_components(img)
 
