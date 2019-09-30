@@ -125,6 +125,8 @@ def connected_components(img):
     for label in pass_labels:
         rectangles.update({
             label: {
+                'cent_x' : 0,
+                'cent_y' : 0,
                 'top': 512,
                 'leftmost': 512,
                 'bottom': -1,
@@ -134,9 +136,12 @@ def connected_components(img):
 
     # Get the rectangle's info for each labels
     for label in pass_labels:
+        total_x, total_y = 0, 0
         for h in range(height):
             for w in range(width):
                 if labels[h, w] == label:
+                    total_x += h
+                    total_y += w
                     if h < rectangles[label]['top']:
                         rectangles[label]['top'] = h
                     if w < rectangles[label]['leftmost']:
@@ -145,14 +150,17 @@ def connected_components(img):
                         rectangles[label]['bottom'] = h 
                     if w > rectangles[label]['rightmost']:
                         rectangles[label]['rightmost'] = w 
-    
+        # end of scanning
+        rectangles[label]['cent_x'] = (int)(total_x / labels_count[label])
+        rectangles[label]['cent_y'] = (int)(total_y / labels_count[label])
+        
     # Draw function
     cross_radius = 8
     for label, d in rectangles.items():
         # draw the rectangle
         cv2.rectangle(img, (d['leftmost'], d['top']), (d['rightmost'], d['bottom']), (255, 0, 0), 2)
         # find the middle point of each rectangle and extend it to a cross
-        middle = ((int)((d['top'] + d['bottom']) / 2), (int)((d['leftmost'] + d['rightmost']) / 2))
+        middle = (rectangles[label]['cent_x'], rectangles[label]['cent_y'])
         # draw the red cross
         for x in range(cross_radius):
             img[middle[0], middle[1] + x] = (0, 0, 255)
@@ -177,8 +185,7 @@ def main():
     img = cv2.imread('lena.bmp')
     binary_img = binarize_image(np.copy(img))
     histogram_image(np.copy(img))
-    img = cv2.imread('a.bmp')
-    connected_components(img)
+    connected_components(binary_img)
 
 
 if __name__ == '__main__':
