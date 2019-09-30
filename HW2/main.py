@@ -5,7 +5,6 @@ Yi-Fan Wu (R08921104)
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-import random
 
 # (a)
 def binarize_image(img):
