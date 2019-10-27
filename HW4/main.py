@@ -98,14 +98,10 @@ def hit_and_miss(img, se_j, se_k):
     for h in range(height):
         for w in range(width):
             img_c[h, w] = (img_c[h, w] + 255) % 510
-    
-    cv2.imwrite('complement.bmp', img_c)
 
     # doing 2 erosions
     img_1 = erosion(np.copy(img), se_j)
-    cv2.imwrite('j.bmp', img_1)
     img_2 = erosion(np.copy(img_c), se_k)
-    cv2.imwrite('k.bmp', img_2)
 
     # img_1 and img_2
     for h in range(height):
