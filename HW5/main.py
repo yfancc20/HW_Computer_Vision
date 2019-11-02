@@ -42,7 +42,8 @@ def erosion(img, se):
 
     for h in range(height):
         for w in range(width):
-            if img[h, w] > 0: # value != 0
+            # only concern the case that se with origin here
+            if img[h, w] > 0: 
                 minimum = np.inf
                 all_contained = True
                 for pixel in se:
