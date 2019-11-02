@@ -15,9 +15,25 @@ SE = [
 
 
 def dilation(img, se):
-    
+    height, width = img.shape
+    img_res = np.zeros(img.shape, dtype=int)
 
-    return img
+    for h in range(height):
+        for w in range(width):
+            if img[h, w] > 0: # value != 0
+                maxima = 0
+                for pixel in se:
+                    x, y = pixel
+                    if 0 <= h + x < height and 0 <= w + y < width:
+                        if img[h+x, w+y] > maxima:
+                            maxima = img[h+x, w+y]
+                
+                for pixel in se:
+                    x, y = pixel
+                    if 0 <= h + x < height and 0 <= w + y < width:
+                        img_res[h+x, w+y] = maxima
+
+    return img_res
     
 
 def erosion(img, se):
@@ -40,8 +56,8 @@ def main():
     img = cv2.imread('lena.bmp', cv2.IMREAD_GRAYSCALE)
 
     print('(a) Doing dilation...')
-    dilation_img = dilation(np.copy(img), SE)
-    cv2.imwrite('a-dilation.bmp', dilation_img)
+    img_dilation = dilation(np.copy(img), SE)
+    cv2.imwrite('a-dilation.bmp', img_dilation)
 
     # print('(b) Doing erosion...')
     # erosion_img = erosion(np.copy(binary_img), SE)
