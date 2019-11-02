@@ -37,18 +37,40 @@ def dilation(img, se):
     
 
 def erosion(img, se):
-    
-    return img
+    height, width = img.shape
+    img_res = np.zeros(img.shape, dtype=int)
+
+    for h in range(height):
+        for w in range(width):
+            if img[h, w] > 0: # value != 0
+                minimum = np.inf
+                all_contained = True
+                for pixel in se:
+                    x, y = pixel
+                    if 0 <= h + x < height and 0 <= w + y < width:
+                        if img[h+x, w+y] == 0:
+                            all_contained = False
+                            break
+                        if img[h+x, w+y] < minimum:
+                            minimum = img[h+x, w+y]
+                
+                if all_contained:
+                    for pixel in se:
+                        x, y = pixel
+                        if 0 <= h + x < height and 0 <= w + y < width:
+                            img_res[h+x, w+y] = minimum
+        
+    return img_res
 
 
 def opening(img, se):
-    img = dilation(img, se)
-    return img
+    img_res = dilation(img, se)
+    return img_res
 
 
 def closing(img, se):
-    img = erosion(img, se)
-    return img
+    img_res = erosion(img, se)
+    return img_res
 
 
 def main():
@@ -59,17 +81,17 @@ def main():
     img_dilation = dilation(np.copy(img), SE)
     cv2.imwrite('a-dilation.bmp', img_dilation)
 
-    # print('(b) Doing erosion...')
-    # erosion_img = erosion(np.copy(binary_img), SE)
-    # cv2.imwrite('b-erosion.bmp', erosion_img)
+    print('(b) Doing erosion...')
+    img_erosion = erosion(np.copy(img), SE)
+    cv2.imwrite('b-erosion.bmp', img_erosion)
 
-    # print('(c) Doing opening...')
-    # opening_img = opening(np.copy(erosion_img), SE)
-    # cv2.imwrite('c-opening.bmp', opening_img)
+    print('(c) Doing opening...')
+    img_opening = opening(np.copy(img_erosion), SE)
+    cv2.imwrite('c-opening.bmp', img_opening)
 
-    # print('(d) Doing closing...')
-    # closing_img = closing(np.copy(dilation_img), SE)
-    # cv2.imwrite('d-closing.bmp', closing_img)
+    print('(d) Doing closing...')
+    img_closing = closing(np.copy(img_dilation), SE)
+    cv2.imwrite('d-closing.bmp', img_closing)
 
 
 
