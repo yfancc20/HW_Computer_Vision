@@ -5,6 +5,7 @@ Yi-Fan Wu (R08921104)
 import cv2
 import numpy as np
 
+
 # a1, a2, a3, a4, 
 # and their corresponding neighbors' directions
 NEIGHBORS = {
@@ -13,7 +14,6 @@ NEIGHBORS = {
     (0, -1): [(1, -1), (1, 0)],     # a3
     (1, 0): [(1, 1), (0, 1)]        # a4
 }
-
 
 
 def binarize_image(img):
@@ -41,7 +41,45 @@ def downsample(img):
     return down_img
 
 
-# def count_connectivity(img):
+def count_connectivity(img):
+    height, width = img.shape[:2]
+    # result will be a 64x64 matrix
+    result = []
+    
+    for h in range(height):
+        row_arr = []
+        for w in range(width):
+            count = 0
+            if img[h, w]:
+                # 4 neighbors need to be checked
+                count_r = 0
+                for n, d in NEIGHBORS.items():
+                    if 0 <= h + n[0] < height and 0 <= w + n[1] < width:
+                        neighbor = img[h + n[0], w + n[1]]
+                        if neighbor:
+                            h1, w1 = h + d[0][0], w + d[0][1]
+                            h2, w2 = h + d[1][0], w + d[1][1]
+                            # two case for counting:
+                            if h1 < 0 or h1 == height or w1 < 0 or w1 == width or \
+                                h2 < 0 or h2 == height or w2 < 0 or w2 == width:
+                                # 1. out of bound
+                                count += 1
+                            elif img[h1, w1] != neighbor or img[h2, w2] != neighbor:
+                                # 2. one of pixel not equal
+                                count += 1 
+                            elif img[h1, w1] == neighbor and img[h2, w2] == neighbor:
+                                count_r += 1
+                if count_r == 4:
+                    count = 5
+
+            if count == 0:
+                row_arr.append(' ')
+            else:
+                row_arr.append(count)
+        result.append(row_arr)
+
+    return result
+
 
 
 
@@ -52,9 +90,10 @@ def main():
 
     print('2. Downsampling...')
     down_img = downsample(binary_img)
-    print(down_img)
 
     print('3. Counting Yokoi connectivity...')
+    result = count_connectivity(down_img)
+    np.savetxt('matrix.txt', result, fmt='%s')
     
 
 
