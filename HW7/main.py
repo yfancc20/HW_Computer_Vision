@@ -29,7 +29,7 @@ def binarize_image(img):
     return img
 
 
-# from 512x512 to 64x64
+# From 512x512 to 64x64
 def downsample(img):
     height, width = img.shape[:2]
     down_img = np.zeros((64, 64), dtype=int)
@@ -42,14 +42,60 @@ def downsample(img):
 
 
 def thinning(img):
-    yokoi_matrix = count_connectivity(img)
-    print(yokoi_matrix)
+    height, width = img.shape[:2]
+    
+    change = True
+    # Repeat checking while stop updating the image
+    while change:
+        change = False
+        indices_p = [] # Indices for pixels which are indicated 'p'
+
+        # Get the Yokoi matrix
+        matrix_yokoi = count_connectivity(img)
+        
+        # Pair relationship operating
+        for h in range(height):
+            for w in range(width):
+                if matrix_yokoi[h, w] == 1:
+                    flag = False # flag = True if one of the neighbors has Yokoi value = 1
+                    for n in NEIGHBORS:
+                        if 0 <= h + n[0] < height and 0 <= w + n[1] < width:
+                            if matrix_yokoi[h + n[0], w + n[1]] == 1:
+                                flag = True
+                                break
+                    if flag:
+                        indices_p.append((h, w))
+
+        # Check marked pixels and do the thin operation
+        for (h, w) in indices_p:
+            count = 0
+            for n, d in NEIGHBORS.items():
+                if 0 <= h + n[0] < height and 0 <= w + n[1] < width:
+                    neighbor = img[h + n[0], w + n[1]]
+                    if neighbor:
+                        h1, w1 = h + d[0][0], w + d[0][1]
+                        h2, w2 = h + d[1][0], w + d[1][1]
+                        # two case for counting:
+                        if h1 < 0 or h1 == height or w1 < 0 or w1 == width or \
+                            h2 < 0 or h2 == height or w2 < 0 or w2 == width:
+                            # 1. out of bound
+                            count += 1
+                        elif img[h1, w1] != neighbor or img[h2, w2] != neighbor:
+                            # 2. one of pixel not equal
+                            count += 1
+
+            # exactly one neighbor has yokoi number = 1
+            if count == 1 and img[h, w] != 0:
+                change = True
+                img[h, w] = 0
+
+    return img
 
 
 def count_connectivity(img):
     height, width = img.shape[:2]
-    # result will be a 64x64 matrix
-    result = []
+    # The result will be a 64x64 matrix
+    result = np.zeros(img.shape, dtype=int)
     
     for h in range(height):
         row_arr = []
@@ -76,12 +122,7 @@ def count_connectivity(img):
                                 count_r += 1
                 if count_r == 4:
                     count = 5
-
-            if count == 0:
-                row_arr.append(' ')
-            else:
-                row_arr.append(count)
-        result.append(row_arr)
+            result[h, w] = count
 
     return result
 
@@ -98,6 +139,7 @@ def main():
 
     print('3. Thinning...')
     thin_img = thinning(down_img)
+    cv2.imwrite('thinning.bmp', thin_img)
     
 
 
