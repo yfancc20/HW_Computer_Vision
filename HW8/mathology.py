@@ -60,13 +60,3 @@ def opening(img):
 def closing(img):
     img_res = erosion(dilation(img))
     return img_res
-
-
-def opening_then_closing(img):
-    img_res = closing(opening(img))
-    return img_res
-
-
-def closing_then_opening(img):
-    img_res = opening(closing(img))
-    return img_res
