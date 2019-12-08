@@ -48,10 +48,36 @@ def prewitt_operator(img, threshold):
                  - img_extend[h-1, w-1] - img_extend[h, w-1] - img_extend[h+1, w-1])
             mag = math.sqrt(p1*p1 + p2*p2)
     
-            if round(mag) < threshold:
+            if mag < threshold:
                 img_result[h-1, w-1] = 255 # else will be zero
         
     cv2.imwrite('b-prewitt.bmp', img_result)
+
+    return img_result
+
+
+def sobel_operator(img, threshold):
+    print('Sobel\'s edge detection with threshold ' + str(threshold))
+
+    height, width = img.shape[:2]
+    img_result = np.zeros(img.shape[:2], dtype=np.uint8)
+
+    # Extend the image
+    # The height & width will be the original's plus 2
+    img_extend = extend_image(img)
+
+    for h in range(1, height + 1):
+        for w in range(1, width + 1):
+            p1 = (img_extend[h+1, w-1] + 2*img_extend[h+1, w] + img_extend[h+1, w+1] 
+                 - img_extend[h-1, w-1] - 2*img_extend[h-1, w] - img_extend[h-1, w+1])
+            p2 = (img_extend[h-1, w+1] + 2*img_extend[h, w+1] + img_extend[h+1, w+1]
+                 - img_extend[h-1, w-1] - 2*img_extend[h, w-1] - img_extend[h+1, w-1])
+            mag = math.sqrt(p1*p1 + p2*p2)
+    
+            if mag < threshold:
+                img_result[h-1, w-1] = 255 # else will be zero
+    
+    cv2.imwrite('c-sobel.bmp', img_result)
 
     return img_result
 
@@ -84,7 +110,8 @@ def main():
     img = cv2.imread('lena.bmp', cv2.IMREAD_GRAYSCALE)
 
     # robert_operator(img, 30)
-    prewitt_operator(img, 24)
+    # prewitt_operator(img, 24)
+    sobel_operator(img, 38)
     
 
 if __name__ == '__main__':
