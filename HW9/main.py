@@ -130,6 +130,39 @@ def kirsch_compass_operator(img, threshold):
     return img_result
                 
 
+def robinson_compass_operator(img, threshold):
+    print('Robinson\'s Compass\'s edge detection with threshold ' + str(threshold))
+
+    height, width = img.shape[:2]
+    img_result = np.zeros(img.shape[:2], dtype=np.uint8)
+    img_extend = extend_image(img)
+
+    # Assume the neighbors' order is clockwise
+    compass = [-1, 0, 1, 2, 1, 0, -1, -2]
+    compass_order = [
+        (-1, -1), (-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1)
+    ]
+
+    for h in range(1, height + 1):
+        for w in range(1, width + 1):
+            # Calculate the MAX of k0 ~ k7
+            maximum = -7000 
+            for k in range(8):
+                mag = 0
+                for idx, (x, y) in enumerate(compass_order):
+                    # Rotate the compass with offset k
+                    mag += img_extend[h+x, w+y] * compass[(idx + k) % 8]
+                if mag > maximum:
+                    maximum = mag
+            
+            if maximum < threshold:
+                img_result[h-1, w-1] = 255
+    
+    cv2.imwrite('f-robinson_compass.bmp', img_result)
+    return img_result
+
+
+
 
 def extend_image(img):
     height, width = img.shape[:2]
@@ -163,7 +196,8 @@ def main():
     # prewitt_operator(img, 24)
     # sobel_operator(img, 38)
     # frei_and_chen_operator(img, 30)
-    kirsch_compass_operator(img, 135)
+    # kirsch_compass_operator(img, 135)
+    robinson_compass_operator(img, 43)
     
 
 if __name__ == '__main__':
