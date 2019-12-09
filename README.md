@@ -1,1 +1,4 @@
-### Homework of the NTU's course: Computer Vision (2019 Fall)
+# Homework of NTU's Course: Computer Vision
+---
+- Season: 2019 Fall
+- Programming language: Python 3
