@@ -162,28 +162,112 @@ def robinson_compass_operator(img, threshold):
     return img_result
 
 
+def nevatia_babu_operator(img, threshold):
+    print('Nevatia-Babu\'s edge detection with threshold ' + str(threshold))
 
-
-def extend_image(img):
     height, width = img.shape[:2]
-    img_extend = np.zeros((height + 2, width + 2), dtype=int)
+    img_result = np.zeros(img.shape[:2], dtype=np.uint8)
+
+    # Should extend by distance 2 (5x5 operator) 
+    img_extend = extend_image(img, 2)
+
+    # N of different angle
+    nev = [
+        [
+            100, 100, 100, 100, 100,
+            100, 100, 100, 100, 100,
+            0, 0, 0, 0, 0,
+            -100, -100, -100, -100, -100,
+            -100, -100, -100, -100, -100
+        ],
+        [
+            100, 100, 100, 100, 100,
+            100, 100, 100, 78, -32,
+            100, 92, 0, -92, -100,
+            32, -78, -100, -100, -100,
+            -100, -100, -100, -100, -100
+        ],
+        [
+            100, 100, 100, 32, -100,
+            100, 100, 92, -78, -100,
+            100, 100, 0, -100, -100,
+            100, 78, -92, -100, -100,
+            100, -32, -100, -100, -100
+        ],
+        [
+            -100, -100, 0, 100, 100,
+            -100, -100, 0, 100, 100,
+            -100, -100, 0, 100, 100,
+            -100, -100, 0, 100, 100,
+            -100, -100, 0, 100, 100
+        ],
+        [
+            -100, 32, 100, 100, 100,
+            -100, -78, 92, 100, 100,
+            -100, -100, 0, 100, 100,
+            -100, -100, -92, 78, 100,
+            -100, -100, -100, -32, 100
+        ],
+        [
+            100, 100, 100, 100, 100,
+            -32, 78, 100, 100, 100,
+            -100, -92, 0, 92, 100,
+            -100, -100, -100, -78, 32,
+            -100, -100, -100, -100, -100
+        ]
+    ]
+
+    for h in range(2, height + 2):
+        for w in range(2, width + 2):
+            maximum = -638000
+            for n in nev:
+                mag = 0
+                i = 0
+                for x in range(h - 2, h + 3):
+                    for y in range(w - 2, w + 3):
+                        mag += img_extend[x, y] * n[i]
+                        i += 1
+
+                if mag > maximum:
+                    maximum = mag
+            
+            if maximum < threshold:
+                img_result[h-2, w-2] = 255
+
+    cv2.imwrite('g-nevatia_babu.bmp', img_result)
+    return img_result
+
+
+# Extend the image by ? distance
+def extend_image(img, dist=1):
+    height, width = img.shape[:2]
+    img_extend = np.zeros((height + dist*2, width + dist*2), dtype=int)
     for h in range(height):
         for w in range(width):
-            img_extend[h + 1, w + 1] = img[h, w]
+            img_extend[h + dist, w + dist] = img[h, w]
             
-    # 4 corner of the extended image
-    img_extend[0, 0] = img_extend[1, 1]
-    img_extend[0, width + 1] = img_extend[1, width]
-    img_extend[height + 1, 0] = img_extend[height, 1]
-    img_extend[height + 1, width + 1] = img_extend[height, width]
+    # 4 corners of the extended image
+    for i in range(0, dist):
+        for j in range(0, dist):
+            # top-left
+            img_extend[i, j] = img_extend[dist, dist]
+            # top-right
+            img_extend[i, width + dist*2 - 1 - j] = img_extend[dist, width + dist - 1]
+            # bottom-left
+            img_extend[height + dist*2 - 1 - i, j] = img_extend[height + dist - 1, dist]
+            # bottom-right
+            img_extend[height + dist*2 - 1 - i, width + dist*2 - 1 - j]\
+                = img_extend[height + dist - 1, width + dist - 1]
 
     # 4 edges of the extended image
-    for c in range(1, width + 1):
-        img_extend[0, c] = img_extend[1, c]
-        img_extend[height + 1, c] = img_extend[height, c]
-    for r in range(1, height + 1):
-        img_extend[r, 0] = img_extend[r, 1]
-        img_extend[r, width + 1] = img_extend[r, width]
+    for c in range(dist, width + dist):
+        for r in range(0, dist):
+            img_extend[r, c] = img_extend[dist, c]
+            img_extend[height + dist + r, c] = img_extend[height + dist - 1, c]
+    for r in range(dist, height + dist):
+        for c in range(0, dist):
+            img_extend[r, c] = img_extend[r, dist]
+            img_extend[r, width + dist + c] = img_extend[r, width + dist - 1]
 
     return img_extend
 
@@ -192,12 +276,13 @@ def main():
     print('Reading the image...')
     img = cv2.imread('lena.bmp', cv2.IMREAD_GRAYSCALE)
 
-    # robert_operator(img, 30)
-    # prewitt_operator(img, 24)
-    # sobel_operator(img, 38)
-    # frei_and_chen_operator(img, 30)
-    # kirsch_compass_operator(img, 135)
+    robert_operator(img, 12)
+    prewitt_operator(img, 24)
+    sobel_operator(img, 38)
+    frei_and_chen_operator(img, 30)
+    kirsch_compass_operator(img, 135)
     robinson_compass_operator(img, 43)
+    nevatia_babu_operator(img, 12500)
     
 
 if __name__ == '__main__':
