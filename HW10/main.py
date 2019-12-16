@@ -24,12 +24,7 @@ def laplacian(img, threshold):
             for x, y in neighbors:
                 amount += img_rep[h+x, w+y]
             
-            if amount >= threshold:
-                img_mask[h-1, w-1] = 1
-            elif amount <= (threshold * -1):
-                img_mask[h-1, w-1] = -1
-            else:
-                img_mask[h-1, w-1] = 0
+            img_mask[h-1, w-1] = check_threshold(amount, threshold)
 
     img_mask_rep = cv2.copyMakeBorder(img_mask, 1, 1, 1, 1, cv2.BORDER_REPLICATE)
     img_result = zero_crossing(img_mask_rep)
@@ -42,7 +37,7 @@ def laplacian(img, threshold):
             for x in range(h - 1, h + 2):
                 for y in range(w - 1, w + 2):
                     amount += img_rep[x, y]
-            amount -= 9 * img_rep[h, w]
+            amount -= (9 * img_rep[h, w])
             amount /= 3
 
             img_mask[h-1, w-1] = check_threshold(amount, threshold)
